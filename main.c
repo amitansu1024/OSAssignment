@@ -8,15 +8,17 @@
 
 static char Prompt[] = "[username ]"; // + The current directory
 static char CurrentDirectory[100] = {0};
-static char* Commands[] = {"cd", "exit", "remove", "pwd", "mkdir", "rmdir"};
 
-// classroom assignment functions
+static char* Commands[] = {"cd", "exit", "remove", "pwd", "mkdir", "rmdir", "wc"}; // all the commands
+
+// functions for respective commands
 int my_cd(char**);
 int my_exit();
 int my_remove(char**);
 int my_pwd();
 int my_mkdir(char**);
 int my_rmdir(char**);
+int my_wc(char**);
 
 char** ParseCommand(char*);
 int ExecuteCommand(char**);
@@ -27,13 +29,14 @@ void ShellLoop();
 char* GetInput();
 void PrintArgs(char**);
 
-int (*BuiltInCommands[]) (char**) = {
+int (*BuiltInCommands[]) (char**) = { // the commands should be in order in which they are defined
     my_cd,   
     my_exit,
 	my_remove,
 	my_pwd,
 	my_mkdir,
-	my_rmdir
+	my_rmdir,
+	my_wc,
 };
 
 int main(int argc, char* argv[]) {
@@ -86,7 +89,7 @@ char* GetInput() {
 
 
 int ExecuteCommand(char** args) {
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 7; ++i) {
         if (strcmp(Commands[i], args[0]) == 0) {
             (BuiltInCommands[i])(args);
         }
@@ -108,17 +111,44 @@ int my_exit() {
 }
 
 int my_remove(char** args)  {
-	remove(args[1]);
+	if (remove(args[1]) == 0)
+        return 0;
+    return 1;
 }
 
 int my_pwd() {
 	printf("%s\n", CurrentDirectory);
+	return 0;
 }
 
 int my_mkdir(char** args) {
 	mkdir(args[1], 0777);
+	return 0;
 }
 
 int my_rmdir(char** args) {
 	rmdir(args[1]);
+	return 0;
+}
+
+
+int my_wc(char** args) {
+	FILE* file = fopen(args[1], "r");
+	if (file == NULL) {
+		printf("Couldn't open file\n");
+		return 0;
+	}
+
+	int lineCount = 0, wordCount = 0, byteCount = 0;
+	for (char c = getc(file); c != EOF; c = getc(file)) {
+		byteCount++;
+		if (c == '\n')
+			lineCount += 1;
+
+		if (c == ' ')
+			wordCount++;
+	}
+
+	printf("The number of lines, words and bytes in the file %s are %d %d %d respectively\n", args[1], lineCount, wordCount, byteCount);
+	return 1;
 }
