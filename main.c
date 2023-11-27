@@ -32,7 +32,7 @@ char* GetInput();
 void PrintArgs(char**);
 
 int (*BuiltInCommands[]) (char**) = { // the commands should be in order in which they are defined in Commands
-    my_cd,   
+    my_cd,
     my_exit,
     my_remove,
     my_pwd,
@@ -45,13 +45,13 @@ int (*BuiltInCommands[]) (char**) = { // the commands should be in order in whic
 int main(int argc, char* argv[]) {
     InitShell();
     ShellLoop();
-    
+
     return EXIT_SUCCESS;
 }
 
 void InitShell() {
     if ((getcwd(CurrentDirectory, 100) == 0))
-	fprintf(stderr, "Failed to initialize directory");
+        fprintf(stderr, "Failed to initialize directory");
 }
 
 void DisplayPrompt() {
@@ -64,17 +64,17 @@ char** ParseCommand(char* line) {
 
     int i = 0;
     while (token != NULL) {
-	int j = 0;
+        int j = 0;
 
-	while (token[j] != '\0') {
-	    if (token[j] == '\n') {
-		token[j] = '\0';
-		break;
-	    }
-	    j++;
-	}
+        while (token[j] != '\0') {
+            if (token[j] == '\n') {
+                token[j] = '\0';
+                break;
+            }
+            j++;
+        }
 
-        args[i] =  token;
+        args[i] = token;
         i++;
         token = strtok(NULL, " ");
     }
@@ -83,10 +83,10 @@ char** ParseCommand(char* line) {
 
 void ShellLoop() {
     while (1)  {
-	DisplayPrompt();
-	char* input = GetInput();
-	char** args = ParseCommand(input);
-	ExecuteCommand(args);
+        DisplayPrompt();
+        char* input = GetInput();
+        char** args = ParseCommand(input);
+        ExecuteCommand(args);
     }
 }
 
@@ -95,7 +95,7 @@ char* GetInput() {
     ssize_t bufsize = 0;
 
     if (getline(&input, &bufsize, stdin) == -1)  {
-	fprintf(stderr, "Unable to get the input\n");
+        fprintf(stderr, "Unable to get the input\n");
     }
     return input;
 }
@@ -106,17 +106,17 @@ int ExecuteCommand(char** args) {
     for (int i = 0; i < 8; ++i) {
         if (strcmp(Commands[i], args[0]) == 0) {
             (BuiltInCommands[i])(args);
-	    commandFound = 1;
+            commandFound = 1;
         }
-    } 
+    }
 
     if (!commandFound)
-	printf("%s: No such Command\n", args[0]);
+        printf("%s: No such Command\n", args[0]);
 }
 
 int my_cd(char** args) {
-    if (chdir(args[1]) == 0) 
-	getcwd(CurrentDirectory, 100);
+    if (chdir(args[1]) == 0)
+        getcwd(CurrentDirectory, 100);
     else printf("No such Directory\n");
 
     printf("%s\n", CurrentDirectory);
@@ -153,22 +153,30 @@ int my_rmdir(char** args) {
 int my_wc(char** args) {
     FILE* file = fopen(args[1], "r");
     if (file == NULL) {
-	printf("Couldn't open file\n");
-	return 0;
+        printf("Couldn't open file\n");
+        return 0;
     }
+    int isAWord = 0;
 
     int lineCount = 0, wordCount = 0, byteCount = 0;
     for (char c = getc(file); c != EOF; c = getc(file)) {
-	byteCount++;
-	if (c == '\n')
-	    lineCount += 1;
+        byteCount++;
+        if (c == '\n')
+            lineCount++;
 
-	if (c == ' ')
-	    wordCount++;
+        // for word count
+        if (c != ' ' && c != '\n' && !isAWord) {
+            isAWord = 1;
+        } else if (isAWord && (c == ' ' || c == '\n')) {
+            wordCount++;
+            isAWord = 0;
+        }
+        else if (c == ' ' || c == '\n')
+            isAWord = 0;
     }
 
     printf("The number of lines, words and bytes in the file %s are %d %d %d respectively\n", args[1], lineCount, wordCount, byteCount);
-	return 1;
+    return 1;
 }
 
 int my_sort(char** args) {
