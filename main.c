@@ -6,7 +6,7 @@
 
 #include <sys/stat.h> // for mkdir
 
-static char Prompt[] = "[username ]"; // + The current directory
+static char Prompt[] = "[username ]"; // The current directory
 static char CurrentDirectory[100] = {0};
 static char** line;
 
@@ -130,7 +130,7 @@ int my_exit() {
 
 int my_remove(char** args)  {
     if (remove(args[1]) == 0)
-    return 0;
+        return 0;
     return 1;
 }
 
@@ -140,13 +140,15 @@ int my_pwd() {
 }
 
 int my_mkdir(char** args) {
-    mkdir(args[1], 0777);
-    return 0;
+    if (mkdir(args[1], 0777) == 0)
+        return 0;
+    else return 1;
 }
 
 int my_rmdir(char** args) {
-    rmdir(args[1]);
-    return 0;
+    if (rmdir(args[1]) == 0)
+        return 0;
+    else return 1;
 }
 
 
@@ -182,14 +184,14 @@ int my_wc(char** args) {
 int my_sort(char** args) {
     FILE* file = fopen(args[1], "r");
     char line_buf[300];
-    long int size = ftell(file);
-
-    line = (char**)malloc(size);
 
     if (file == NULL) {
         printf("File not found");
         return 1;
     }
+
+    long int size = ftell(file);
+    line = (char**)malloc(size);
 
     int x = 0;
 
@@ -213,4 +215,6 @@ int my_sort(char** args) {
     for (int i = 0; i < x; i++) {
         printf("%s", line[i]);
     }
+
+    return 0;
 }
